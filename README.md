@@ -1,4 +1,5 @@
 🗂️ Modelo en Cascada - Plan de Proyecto (8 semanas)
+
 🔹 Fase 1: Requisitos (Semana 1)
 Objetivo: Definir con claridad qué debe hacer el sistema.
 
