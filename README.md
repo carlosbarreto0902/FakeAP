@@ -67,6 +67,8 @@ Plan de pruebas:
 
 -Resultados de pruebas (bugs encontrados, soluciones aplicadas)
 
+-Pruebas automatizadas
+
 
 🔹 Fase 5: Despliegue (Semana 7)
 Objetivo: Configurar y preparar el entorno real.
