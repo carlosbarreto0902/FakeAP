@@ -1,0 +1,24 @@
+{% extends 'board/base.html' %}
+{% block content %}
+<h2>Dispositivos Detectados</h2>
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>MAC Address</th>
+            <th>IP Address</th>
+            <th>Fecha</th>
+            <th>Alerta</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for d in devices %}
+        <tr>
+            <td>{{ d.mac_address }}</td>
+            <td>{{ d.ip_address }}</td>
+            <td>{{ d.detected_at }}</td>
+            <td>{% if d.alert %}⚠️{% else %}✔️{% endif %}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

@@ -1,0 +1,10 @@
+{% extends 'board/base.html' %}
+{% block content %}
+<h2>Confirmar eliminación</h2>
+<p>¿Seguro que quieres eliminar la MAC: <strong>{{ device.mac_address }}</strong>?</p>
+<form method="post">
+    {% csrf_token %}
+    <button type="submit" class="btn btn-danger">Eliminar</button>
+    <a href="{% url 'whitelist_list' %}" class="btn btn-secondary">Cancelar</a>
+</form>
+{% endblock %}

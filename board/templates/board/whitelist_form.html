@@ -1,0 +1,10 @@
+{% extends 'board/base.html' %}
+{% block content %}
+<h2>Agregar MAC a la Whitelist</h2>
+<form method="post" novalidate>
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit" class="btn btn-success">Guardar</button>
+    <a href="{% url 'whitelist_list' %}" class="btn btn-secondary">Cancelar</a>
+</form>
+{% endblock %}
