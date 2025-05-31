@@ -1,5 +1,5 @@
 {% extends 'board/base.html' %}
 {% block content %}
 <h2>Sobre FakeAP</h2>
-<p>Este sistema despliega puntos de acceso trampa (honeypots) en Editora Perú para detectar ataques de hombre en el medio (MitM) de forma proactiva.</p>
+<p>Fake AP implementa un punto de acceso Wi-Fi falso para atraer y controlar dispositivos conectados. Utiliza hostapd y dnsmasq para crear la red y asignar IPs, con filtrado MAC para permitir solo dispositivos autorizados. Captura tráfico con Scapy para su análisis en tiempo real. Se integra con un dashboard web hecho en Django que muestra dispositivos conectados, tráfico y alertas. Usa reglas iptables para redireccionamiento y seguridad. Su finalidad es detectar intrusos y fortalecer la seguridad en entornos de red.</p>
 {% endblock %}

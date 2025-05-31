@@ -12,7 +12,8 @@ class Device(models.Model):
     ip_address = models.GenericIPAddressField()
     detected_at = models.DateTimeField(auto_now_add=True)
     alert = models.BooleanField(default=False)
-
+    hostname = models.CharField(max_length=255, blank=True, null=True)
+    
     def __str__(self):
         return f"{self.mac_address} - {self.ip_address}"
     

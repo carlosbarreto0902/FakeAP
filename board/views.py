@@ -4,6 +4,14 @@ from django.contrib.auth import logout
 from .models import Device, AllowedDevice
 from .forms import AllowedDeviceForm
 
+# Django REST Framework
+from rest_framework import viewsets
+from rest_framework.permissions import IsAuthenticated, AllowAny
+from .serializers import AllowedDeviceSerializer
+
+
+# Vistas web
+
 @login_required
 def dashboard(request):
     devices = Device.objects.order_by('-detected_at')
@@ -39,3 +47,10 @@ def whitelist_delete(request, pk):
         device.delete()
         return redirect('whitelist_list')
     return render(request, 'board/whitelist_confirm_delete.html', {'device': device})
+
+
+# API REST: Whitelist solo lectura
+class WhitelistViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = AllowedDevice.objects.all()
+    serializer_class = AllowedDeviceSerializer
+    permission_classes = [AllowAny]  # Puedes usar IsAuthenticated si deseas requerir login en producción
