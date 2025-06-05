@@ -1,13 +1,21 @@
 {% extends 'board/base.html' %}
 {% block content %}
+
 <h2>Dispositivos Detectados</h2>
+
+{% if alerta %}
+    <div class="alert alert-danger" role="alert">
+        🚨 ¡Se han detectado dispositivos no autorizados en la red!
+    </div>
+{% endif %}
+
 <table class="table table-striped">
     <thead>
         <tr>
             <th>MAC Address</th>
             <th>IP Address</th>
             <th>Fecha</th>
-            <th>Alerta</th>
+            <th>Red</th>
         </tr>
     </thead>
     <tbody>
@@ -16,9 +24,22 @@
             <td>{{ d.mac_address }}</td>
             <td>{{ d.ip_address }}</td>
             <td>{{ d.detected_at }}</td>
-            <td>{% if d.alert %}⚠️{% else %}✔️{% endif %}</td>
+            <td>
+                {% if d.is_allowed %}
+                    ✔️
+                {% else %}
+                    ❌
+                {% endif %}
+            </td>
         </tr>
         {% endfor %}
     </tbody>
 </table>
+
+<script>
+    setTimeout(function() {
+        location.reload();
+    }, 1 * 60 * 1000);  // Recargar cada 1 minutos
+</script>
+
 {% endblock %}
