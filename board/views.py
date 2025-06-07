@@ -4,13 +4,11 @@ from django.contrib.auth import logout
 from .models import Device, AllowedDevice
 from .forms import AllowedDeviceForm
 from datetime import date
-from django.utils.timezone import localtime
+from django.utils.timezone import localtime, now
 
 # Django REST Framework
 from rest_framework import viewsets
-from rest_framework.permissions import IsAuthenticated, AllowAny
-from rest_framework.decorators import api_view, permission_classes
-from rest_framework.response import Response
+from rest_framework.permissions import AllowAny
 from .serializers import AllowedDeviceSerializer
 from .utils import enviar_alerta_email
 
@@ -21,19 +19,16 @@ from .utils import enviar_alerta_email
 def dashboard(request):
     devices = Device.objects.order_by('-detected_at')
 
-    # Obtener la fecha actual (en zona local)
     hoy = date.today()
     alerta = False
     whitelist = set(AllowedDevice.objects.values_list('mac_address', flat=True))
 
     for d in devices:
-        # Convertir a zona local si es necesario
         detected_date = localtime(d.detected_at).date()
         if d.mac_address not in whitelist and detected_date == hoy:
             alerta = True
             break
 
-    # Marcar dispositivos permitidos
     for d in devices:
         d.is_allowed = d.mac_address in whitelist
 
@@ -83,37 +78,4 @@ def whitelist_delete(request, pk):
 class WhitelistViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = AllowedDevice.objects.all()
     serializer_class = AllowedDeviceSerializer
-    permission_classes = [AllowAny]  # Usa IsAuthenticated si deseas requerir login en producción
-
-
-# API para registrar dispositivos detectados
-@api_view(['POST'])
-@permission_classes([AllowAny])
-def update_device(request):
-    mac = request.data.get('mac_address')
-    ip = request.data.get('ip_address')
-    hostname = request.data.get('hostname', '')
-
-    if not mac or not ip:
-        return Response({'error': 'Faltan datos'}, status=400)
-
-    ya_existe = Device.objects.filter(mac_address=mac).exists()
-    esta_en_whitelist = AllowedDevice.objects.filter(mac_address=mac).exists()
-
-    # Registrar nuevo dispositivo
-    device = Device.objects.create(
-        mac_address=mac,
-        ip_address=ip,
-        hostname=hostname,
-        alert=not esta_en_whitelist
-    )
-
-    # Debug para consola
-    print(f"Debug: MAC={mac}, YaExiste={ya_existe}, EnWhitelist={esta_en_whitelist}")
-
-    # Enviar alerta si es nuevo y no está permitido
-    if not ya_existe and not esta_en_whitelist:
-        print(f"✅ ALERTA: Enviando correo para {mac}")
-        enviar_alerta_email(mac, ip, hostname)
-
-    return Response({'status': 'ok'})
+    permission_classes = [AllowAny]

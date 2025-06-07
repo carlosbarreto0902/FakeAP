@@ -8,7 +8,7 @@ class AllowedDevice(models.Model):
         return self.mac_address
 
 class Device(models.Model):
-    mac_address = models.CharField(max_length=17)
+    mac_address = models.CharField(max_length=17, unique=True)  # <-- aquí el cambio
     ip_address = models.GenericIPAddressField()
     detected_at = models.DateTimeField(auto_now_add=True)
     alert = models.BooleanField(default=False)
