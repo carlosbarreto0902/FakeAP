@@ -21,7 +21,7 @@
     <tbody>
         {% for d in devices %}
         <tr>
-            <td>{{ d.mac_address }}</td>
+            <td><a href="{% url 'mac_detail' d.mac_address %}">{{ d.mac_address }}</a></td>
             <td>{{ d.ip_address }}</td>
             <td>{{ d.detected_at }}</td>
             <td>
