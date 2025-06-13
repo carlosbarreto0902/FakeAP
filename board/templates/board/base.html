@@ -9,6 +9,7 @@
     <div class="container-fluid">
         <span class="navbar-brand">FakeAP </span>
         <div>
+            <a href="{% url 'alertas_list' %}" class="btn btn-outline-light btn-sm">🔔 Ver alertas</a>
             <a href="{% url 'dashboard' %}" class="btn btn-outline-light btn-sm">Dashboard</a>
             <a href="{% url 'about' %}" class="btn btn-outline-light btn-sm">About</a>
             {% if user.is_authenticated %}

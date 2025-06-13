@@ -46,3 +46,12 @@ class TraficoPorMinuto(models.Model):
         ]
         verbose_name = "Tráfico por minuto"
         verbose_name_plural = "Tráfico por minuto"
+
+class Alerta(models.Model):
+    mac = models.CharField(max_length=100)
+    motivo = models.CharField(max_length=255)
+    valor_detectado = models.CharField(max_length=100)
+    fecha = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.mac} - {self.motivo} - {self.fecha.strftime('%Y-%m-%d %H:%M')}"

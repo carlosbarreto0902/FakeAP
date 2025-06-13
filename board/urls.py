@@ -23,4 +23,5 @@ urlpatterns = [
     path('api/', include(router.urls)),  # <- Incluye las rutas de la API REST (como /api/whitelist/)
     path('api/traffic/', views.registrar_trafico, name='registrar_trafico'),
     path('mac/<str:mac_address>/', views.mac_detail, name='mac_detail'),
+    path('alertas/', views.alertas_list, name='alertas_list'),
 ]

@@ -1,0 +1,21 @@
+{% extends "base_generic.html" %}
+{% block content %}
+<h2>📧 Alertas enviadas</h2>
+<table border="1">
+    <tr>
+        <th>Fecha</th>
+        <th>MAC</th>
+        <th>Motivo</th>
+        <th>Valor Detectado</th>
+    </tr>
+    {% for alerta in alertas %}
+    <tr>
+        <td>{{ alerta.fecha|date:"Y-m-d H:i:s" }}</td>
+        <td>{{ alerta.mac }}</td>
+        <td>{{ alerta.motivo }}</td>
+        <td>{{ alerta.valor_detectado }}</td>
+    </tr>
+    {% endfor %}
+</table>
+{% endblock %}
+
