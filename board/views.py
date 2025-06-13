@@ -8,6 +8,7 @@ from django.utils.timezone import now, timedelta
 from django.db.models import Count
 from collections import Counter
 from datetime import timedelta as dtimedelta
+from django.db import transaction
 
 # Django REST Framework
 from rest_framework import viewsets
@@ -25,7 +26,6 @@ from datetime import datetime
 # ------------------------------------
 # Función para analizar umbrales
 # ------------------------------------
-# Lista de MACs que no deben generar alertas
 MACS_EXCLUIDAS = ['e8:de:27:09:f3:4d']
 
 def analizar_umbral_y_alertar(mac):
@@ -37,7 +37,6 @@ def analizar_umbral_y_alertar(mac):
 
     hace_1min = now() - timedelta(minutes=1)
 
-    # Verificar solicitudes DNS
     solicitudes_dns = Traffic.objects.filter(
         mac=mac,
         timestamp__gte=hace_1min
@@ -47,7 +46,6 @@ def analizar_umbral_y_alertar(mac):
         enviar_alerta_trafico_sospechoso(mac, "Solicitudes DNS excesivas", solicitudes_dns)
         Alerta.objects.create(mac=mac, motivo="Solicitudes DNS excesivas", valor_detectado=str(solicitudes_dns))
 
-    # Verificar tráfico de bytes
     trafico = TraficoPorMinuto.objects.filter(
         mac=mac,
         minuto__gte=hace_1min
@@ -63,7 +61,6 @@ def analizar_umbral_y_alertar(mac):
 @login_required
 def dashboard(request):
     devices = Device.objects.order_by('-detected_at')
-
     hoy = date.today()
     alerta = False
     whitelist = set(AllowedDevice.objects.values_list('mac_address', flat=True))
@@ -153,11 +150,16 @@ def registrar_trafico(request):
 
             bytes_usados = int(request.data['bytes'])
 
-            obj, created = TraficoPorMinuto.objects.update_or_create(
-                mac=mac,
-                minuto=minuto_utc,
-                defaults={'bytes': bytes_usados}
-            )
+            with transaction.atomic():
+                obj, created = TraficoPorMinuto.objects.get_or_create(
+                    mac=mac,
+                    minuto=minuto_utc,
+                    defaults={'bytes': bytes_usados}
+                )
+                if not created:
+                    obj.bytes += bytes_usados
+                    obj.save()
+
             analizar_umbral_y_alertar(mac)
             return Response({'status': 'ok'})
 
