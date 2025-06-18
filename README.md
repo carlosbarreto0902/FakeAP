@@ -1,7 +1,7 @@
 # FakeAP
 🗂️ Modelo en Cascada - Plan de Proyecto (8 semanas)
 
-🔹 Fase 1: Requisitos (Semana 1) Objetivo: Definir con claridad qué debe hacer el sistema.
+🔹 Fase 1: Requisitos (Semana 7) Objetivo: Definir con claridad qué debe hacer el sistema.
 
 Entregables:
 
@@ -15,7 +15,7 @@ Entregables:
 
 -Casos de uso
 
-🔹 Fase 2: Diseño (Semana 2) Objetivo: Diseñar la arquitectura y componentes del sistema.
+🔹 Fase 2: Diseño (Semana 9) Objetivo: Diseñar la arquitectura y componentes del sistema.
 
 Entregables:
 
@@ -35,7 +35,7 @@ Entregables:
 
 -Lógica del portal falso (HTML + Django views)
 
-🔹 Fase 3: Implementación (Semanas 3-5) Objetivo: Codificar los módulos según el diseño.
+🔹 Fase 3: Implementación (Semanas 10-13) Objetivo: Codificar los módulos según el diseño.
 
 Entregables:
 
@@ -49,7 +49,7 @@ Entregables:
 
 -Documentación técnica del código (README, estructura del proyecto, dependencias)
 
-🔹 Fase 4: Pruebas (Semana 6) Objetivo: Validar el funcionamiento del sistema.
+🔹 Fase 4: Pruebas (Semana 14) Objetivo: Validar el funcionamiento del sistema.
 
 Entregables:
 
@@ -65,7 +65,7 @@ Plan de pruebas:
 
 -Pruebas automatizadas
 
-🔹 Fase 5: Despliegue (Semana 7) Objetivo: Configurar y preparar el entorno real.
+🔹 Fase 5: Despliegue (Semana 14) Objetivo: Configurar y preparar el entorno real.
 
 Entregables:
 
@@ -81,7 +81,7 @@ Manual de instalación:
 
 -Scripts de automatización (si los tienes)
 
-🔹 Fase 6: Mantenimiento (Semana 8) Objetivo: Documentar mejoras, posibles vulnerabilidades, y plan de soporte.
+🔹 Fase 6: Mantenimiento (Semana 15) Objetivo: Documentar mejoras, posibles vulnerabilidades, y plan de soporte.
 
 Entregables:
 
@@ -90,3 +90,5 @@ Entregables:
 -Lista de mejoras futuras (e.g., notificaciones, dashboard de logs)
 
 -Bitácora de cambios/versiones
+
+-Exposición

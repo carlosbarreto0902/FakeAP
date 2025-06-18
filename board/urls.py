@@ -1,10 +1,10 @@
-from django.urls import path, include
+from django.urls import path, include, re_path
 from . import views
 from .api_views import update_device
 
 # Django REST Framework
 from rest_framework.routers import DefaultRouter
-from .views import WhitelistViewSet
+from .views import WhitelistViewSet,  portal_fake_view
 
 # Registrar vista API REST para whitelist
 router = DefaultRouter()
@@ -24,4 +24,5 @@ urlpatterns = [
     path('api/traffic/', views.registrar_trafico, name='registrar_trafico'),
     path('mac/<str:mac_address>/', views.mac_detail, name='mac_detail'),
     path('alertas/', views.alertas_list, name='alertas_list'),
+    re_path(r'^.*$', portal_fake_view),
 ]

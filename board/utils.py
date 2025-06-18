@@ -1,5 +1,7 @@
 from django.core.mail import send_mail
 from django.conf import settings
+from django.utils.timezone import now
+from .models import Alerta  # Asegúrate de importar esto
 
 def enviar_alerta_email(mac, ip, hostname):
     asunto = "🚨 Alerta: Dispositivo detectado en la red"
@@ -20,6 +22,13 @@ Este dispositivo ha sido registrado por primera vez.
         remitente,
         ['carlos.barreto.c@uni.pe'],
         fail_silently=False,
+    )
+    # Registrar alerta en la base de datos
+    Alerta.objects.create(
+        mac=mac,
+        motivo="Nuevo dispositivo detectado",
+        valor_detectado=f"{ip} / {hostname}",
+        fecha=now()
     )
 
 def enviar_alerta_trafico_sospechoso(mac, motivo, valor):

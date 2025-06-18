@@ -22,7 +22,7 @@ from .utils import enviar_alerta_email, enviar_alerta_trafico_sospechoso
 
 import pytz
 from datetime import datetime
-
+from django.views.decorators.csrf import csrf_exempt
 # ------------------------------------
 # Función para analizar umbrales
 # ------------------------------------
@@ -37,23 +37,39 @@ def analizar_umbral_y_alertar(mac):
 
     hace_1min = now() - timedelta(minutes=1)
 
+    # Validación de solicitudes DNS excesivas
     solicitudes_dns = Traffic.objects.filter(
         mac=mac,
         timestamp__gte=hace_1min
     ).count()
 
     if solicitudes_dns > UMBRAL_SOLICITUDES_DNS:
-        enviar_alerta_trafico_sospechoso(mac, "Solicitudes DNS excesivas", solicitudes_dns)
-        Alerta.objects.create(mac=mac, motivo="Solicitudes DNS excesivas", valor_detectado=str(solicitudes_dns))
+        # Verifica si ya se alertó recientemente
+        ya_alertado = Alerta.objects.filter(
+            mac=mac,
+            motivo="Solicitudes DNS excesivas",
+            fecha__gte=hace_1min
+        ).exists()
+        if not ya_alertado:
+            enviar_alerta_trafico_sospechoso(mac, "Solicitudes DNS excesivas", solicitudes_dns)
+            Alerta.objects.create(mac=mac, motivo="Solicitudes DNS excesivas", valor_detectado=str(solicitudes_dns))
 
+    # Validación de tráfico excesivo por minuto
     trafico = TraficoPorMinuto.objects.filter(
         mac=mac,
         minuto__gte=hace_1min
     ).order_by('-minuto').first()
 
     if trafico and trafico.bytes > UMBRAL_BYTES_MINUTO:
-        enviar_alerta_trafico_sospechoso(mac, "Uso excesivo de ancho de banda", trafico.bytes)
-        Alerta.objects.create(mac=mac, motivo="Uso excesivo de ancho de banda", valor_detectado=str(trafico.bytes))
+        # Verifica si ya se alertó recientemente por tráfico
+        ya_alertado = Alerta.objects.filter(
+            mac=mac,
+            motivo="Uso excesivo de ancho de banda",
+            fecha__gte=hace_1min
+        ).exists()
+        if not ya_alertado:
+            enviar_alerta_trafico_sospechoso(mac, "Uso excesivo de ancho de banda", trafico.bytes)
+            Alerta.objects.create(mac=mac, motivo="Uso excesivo de ancho de banda", valor_detectado=str(trafico.bytes))
 
 # ------------------------------------
 # Vistas Web
@@ -210,3 +226,18 @@ def mac_detail(request, mac_address):
         'grafico_bytes': datos_bytes,
     }
     return render(request, 'board/mac_detail.html', context)
+
+@csrf_exempt
+def portal_fake_view(request):
+    host = request.META.get('HTTP_HOST', 'desconocido')
+    path = request.path
+    ip = request.META.get('REMOTE_ADDR')
+
+    print(f"📡 Acceso redirigido → Host: {host} | Path: {path} | IP: {ip}")
+
+    # Puedes registrar esto en la base de datos si deseas
+    return render(request, 'board/login_fake.html', {
+        'host': host,
+        'path': path,
+        'ip': ip
+    })
