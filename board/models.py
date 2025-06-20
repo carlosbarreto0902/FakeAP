@@ -47,7 +47,9 @@ class TraficoPorMinuto(models.Model):
         verbose_name = "Tráfico por minuto"
         verbose_name_plural = "Tráfico por minuto"
 
+
 class Alerta(models.Model):
+    """Alerta generada por comportamiento sospechoso"""
     mac = models.CharField(max_length=100)
     motivo = models.CharField(max_length=255)
     valor_detectado = models.CharField(max_length=100)
@@ -55,3 +57,16 @@ class Alerta(models.Model):
 
     def __str__(self):
         return f"{self.mac} - {self.motivo} - {self.fecha.strftime('%Y-%m-%d %H:%M')}"
+
+
+class LoginFalso(models.Model):
+    """Intento de login capturado en el portal falso"""
+    usuario = models.CharField(max_length=100)
+    clave = models.CharField(max_length=100)
+    ip = models.GenericIPAddressField()
+    host = models.CharField(max_length=255)
+    path = models.CharField(max_length=255)
+    fecha = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Capturado {self.usuario}@{self.ip} en {self.fecha.strftime('%Y-%m-%d %H:%M')}"

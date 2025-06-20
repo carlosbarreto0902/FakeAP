@@ -1,7 +1,7 @@
 {% extends 'board/base.html' %}
 {% block content %}
 
-<h2>Dispositivos Detectados</h2>
+<h2>🍯Dispositivos Detectados</h2>
 
 {% if alerta %}
     <div class="alert alert-danger" role="alert">
@@ -14,7 +14,8 @@
         <tr>
             <th>MAC Address</th>
             <th>IP Address</th>
-            <th>Ultima Conexión</th>
+            <th>Hostname</th>  {# ✅ nueva columna #}
+            <th>Última Conexión</th>
             <th>Red</th>
         </tr>
     </thead>
@@ -23,6 +24,7 @@
         <tr>
             <td><a href="{% url 'mac_detail' d.mac_address %}">{{ d.mac_address }}</a></td>
             <td>{{ d.ip_address }}</td>
+            <td>{{ d.hostname|default:"-" }}</td>  {# ✅ muestra hostname si existe o '-' #}
             <td>{{ d.detected_at }}</td>
             <td>
                 {% if d.is_allowed %}
@@ -39,7 +41,7 @@
 <script>
     setTimeout(function() {
         location.reload();
-    }, 30 * 1000);  // Recargar cada 1 minutos
+    }, 30 * 1000);  // Recargar cada 30 segundos
 </script>
 
 {% endblock %}
