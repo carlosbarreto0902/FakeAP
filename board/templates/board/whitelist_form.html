@@ -1,0 +1,41 @@
+{% extends 'board/base.html' %}
+{% block content %}
+
+<div class="container mt-4">
+    <h2 class="mb-4 text-center">
+        <span style="font-weight:600;">➕ Agregar MAC a la Whitelist</span>
+    </h2>
+
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <form method="post" class="shadow-sm p-4 rounded border bg-light">
+                {% csrf_token %}
+                <div class="mb-3">
+                    {{ form.mac_address.label_tag }}
+                    {{ form.mac_address }}
+                    {% if form.mac_address.errors %}
+                        <div class="text-danger small">{{ form.mac_address.errors }}</div>
+                    {% endif %}
+                </div>
+                <div class="mb-3">
+                    {{ form.description.label_tag }}
+                    {{ form.description }}
+                    {% if form.description.errors %}
+                        <div class="text-danger small">{{ form.description.errors }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="d-flex justify-content-between">
+                    <a href="{% url 'whitelist_list' %}" class="btn btn-secondary">
+                        ❌ Cancelar
+                    </a>
+                    <button type="submit" class="btn btn-success">
+                        💾 Guardar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

@@ -1,0 +1,43 @@
+{% extends 'board/base.html' %}
+{% block content %}
+
+<div class="container mt-4">
+    <h2 class="mb-4 text-center">
+        <span style="font-weight:600;">📧 Alertas Enviadas</span>
+    </h2>
+
+    {% if alertas %}
+    <div class="table-responsive">
+        <table class="table table-hover align-middle shadow-sm">
+            <thead class="table-danger text-center">
+                <tr>
+                    <th scope="col">Fecha</th>
+                    <th scope="col">MAC Address</th>
+                    <th scope="col">Motivo</th>
+                    <th scope="col">Valor Detectado</th>
+                </tr>
+            </thead>
+            <tbody class="table-group-divider text-center">
+                {% for alerta in alertas %}
+                <tr>
+                    <td>{{ alerta.fecha|date:"d/m/Y H:i:s" }}</td>
+                    <td>
+                        <span class="fw-semibold">{{ alerta.mac }}</span>
+                    </td>
+                    <td>{{ alerta.motivo }}</td>
+                    <td>{{ alerta.valor_detectado }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="alert alert-info text-center shadow-sm">
+        <strong>No hay alertas enviadas.</strong>
+    </div>
+    {% endif %}
+</div>
+
+{% endblock %}
+
+

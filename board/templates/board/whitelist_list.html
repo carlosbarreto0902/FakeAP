@@ -1,0 +1,48 @@
+{% extends 'board/base.html' %}
+{% block content %}
+
+<div class="container mt-4">
+    <h2 class="mb-4 text-center">
+        <span style="font-weight:600;">✅ Whitelist de MACs Autorizadas</span>
+    </h2>
+
+    <div class="text-end mb-3">
+        <a href="{% url 'whitelist_add' %}" class="btn btn-success shadow-sm">
+            ➕ Agregar MAC
+        </a>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-hover align-middle shadow-sm">
+            <thead class="table-success text-center">
+                <tr>
+                    <th scope="col">MAC Address</th>
+                    <th scope="col">Descripción</th>
+                    <th scope="col">Acciones</th>
+                </tr>
+            </thead>
+            <tbody class="text-center table-group-divider">
+                {% for device in devices %}
+                <tr>
+                    <td class="fw-semibold">{{ device.mac_address }}</td>
+                    <td>{{ device.description|default:"-" }}</td>
+                    <td>
+                        <form action="{% url 'whitelist_delete' device.pk %}" method="post" style="display:inline;">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-danger btn-sm shadow-sm" onclick="return confirm('¿Eliminar esta MAC?')">
+                                🗑️ Eliminar
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="3" class="text-center text-muted">No hay MACs en la whitelist.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% endblock %}

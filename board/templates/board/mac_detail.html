@@ -1,0 +1,86 @@
+{% extends 'board/base.html' %}
+{% load pluck %}
+
+{% block content %}
+<h2 class="text-xl font-bold">Detalle de tráfico para MAC: {{ mac }}</h2>
+
+<!-- Gráfico 1: Solicitudes DNS por minuto -->
+<div class="flex justify-center">
+  <div style="width: 100%; height: 200px;">
+    <canvas id="grafico"></canvas>
+  </div>
+</div>
+
+<!-- Gráfico 2: Bytes por minuto -->
+<div class="flex justify-center mt-6">
+  <div style="width: 100%; height: 200px;">
+    <canvas id="graficoBytes"></canvas>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+// Gráfico 1: Solicitudes por minuto
+const ctx = document.getElementById('grafico').getContext('2d');
+new Chart(ctx, {
+    type: 'line',
+    data: {
+        labels: {{ grafico|pluck:"minuto"|safe }},
+        datasets: [{
+            label: 'Solicitudes por minuto',
+            data: {{ grafico|pluck:"total"|safe }},
+            borderColor: 'rgba(75, 192, 192, 1)',
+            tension: 0.2,
+            fill: false
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false
+    }
+});
+
+// Gráfico 2: Bytes por minuto
+const datosBytes = {{ grafico_bytes|safe }};
+const ctxBytes = document.getElementById('graficoBytes').getContext('2d');
+new Chart(ctxBytes, {
+    type: 'line',
+    data: {
+        labels: datosBytes.map(d => d.minuto),
+        datasets: [{
+            label: 'Bytes por minuto',
+            data: datosBytes.map(d => d.bytes),
+            backgroundColor: 'rgba(153, 102, 255, 0.3)',
+            borderColor: 'rgba(153, 102, 255, 1)',
+            borderWidth: 2,
+            fill: true,
+            tension: 0.3
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+            y: {
+                beginAtZero: true
+            }
+        }
+    }
+});
+</script>
+
+<!-- Lista de dominios accedidos -->
+<h3 class="text-lg font-semibold mt-6">Últimos dominios accedidos:</h3>
+<ul class="list-disc pl-6">
+    {% for r in registros %}
+        <li>{{ r.timestamp }} — {{ r.dominio }}</li>
+    {% endfor %}
+</ul>
+
+<script>
+    // Recargar cada minuto automáticamente
+    setTimeout(function() {
+        location.reload();
+    }, 30 * 1000);
+</script>
+{% endblock %}

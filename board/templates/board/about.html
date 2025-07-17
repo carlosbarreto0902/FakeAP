@@ -1,0 +1,36 @@
+{% extends 'board/base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="card shadow-sm border-0">
+        <div class="card-body">
+            <h2 class="card-title text-center mb-4" style="font-weight: 600;">
+                ℹ️ Sobre <span class="text-danger">FakeAP</span>
+            </h2>
+            <p class="card-text fs-5">
+                <strong>FakeAP</strong> es un sistema de seguridad que implementa un <span class="text-primary">punto de acceso Wi-Fi trampa</span> diseñado para atraer y controlar dispositivos que intentan conectarse a redes inalámbricas.
+            </p>
+            <ul class="list-group list-group-flush mb-3">
+                <li class="list-group-item">
+                    🔧 Usa <code>hostapd</code> y <code>dnsmasq</code> para crear la red Wi-Fi y asignar direcciones IP dinámicas.
+                </li>
+                <li class="list-group-item">
+                    🔐 Aplica <strong>filtrado MAC</strong> para restringir el acceso a dispositivos autorizados.
+                </li>
+                <li class="list-group-item">
+                    📡 Captura y analiza el tráfico en tiempo real usando <code>Scapy</code>, permitiendo monitoreo detallado.
+                </li>
+                <li class="list-group-item">
+                    🧠 Se integra con un <strong>dashboard web en Django</strong> que muestra dispositivos conectados, historial de tráfico y alertas de seguridad.
+                </li>
+                <li class="list-group-item">
+                    🔁 Emplea reglas <code>iptables</code> para redireccionamiento inteligente, control de acceso y medidas de engaño.
+                </li>
+            </ul>
+            <p class="card-text fs-5">
+                Este sistema permite <strong>detectar intrusos</strong> en redes inalámbricas y contribuye al <span class="text-success">fortalecimiento de la ciberseguridad</span> en entornos corporativos o académicos.
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}
